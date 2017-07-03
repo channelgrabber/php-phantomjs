@@ -16,6 +16,7 @@ use JonnyW\PhantomJs\Message\ResponseInterface;
 use JonnyW\PhantomJs\Template\TemplateRendererInterface;
 use JonnyW\PhantomJs\Exception\NotWritableException;
 use JonnyW\PhantomJs\Exception\ProcedureFailedException;
+use Symfony\Component\Process\Process;
 
 /**
  * PHP PhantomJs
@@ -92,26 +93,11 @@ class Procedure implements ProcedureInterface
 
             $executable = $this->write($procedure);
 
-            $descriptorspec = array(
-                array('pipe', 'r'),
-                array('pipe', 'w'),
-                array('pipe', 'w')
-            );
-
-            $process = proc_open(escapeshellcmd(sprintf('%s %s', $client->getCommand(), $executable)), $descriptorspec, $pipes, null, null);
-
-            if (!is_resource($process)) {
-                throw new ProcedureFailedException('proc_open() did not return a resource');
-            }
-
-            $result = stream_get_contents($pipes[1]);
-            $log    = stream_get_contents($pipes[2]);
-
-            fclose($pipes[0]);
-            fclose($pipes[1]);
-            fclose($pipes[2]);
-
-            proc_close($process);
+            $process = new Process(escapeshellcmd(sprintf('%s %s', $client->getCommand(), $executable)));
+            $process->run();
+            
+            $result = $process->getOutput();
+            $log = $process->getErrorOutput();
 
             $response->import(
                 $this->parser->parse($result)
