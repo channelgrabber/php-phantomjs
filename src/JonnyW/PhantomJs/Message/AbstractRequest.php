@@ -107,7 +107,7 @@ abstract class AbstractRequest implements RequestInterface
      * @param string $method  (default: RequestInterface::METHOD_GET)
      * @param int    $timeout (default: 5000)
      */
-    public function __construct($url = null, $method = RequestInterface::METHOD_GET, $timeout = 5000)
+    public function __construct($url = null, $method = RequestInterface::METHOD_GET, $timeout = 30000)
     {
         $this->headers        = array();
         $this->data           = array();
@@ -282,7 +282,7 @@ abstract class AbstractRequest implements RequestInterface
         if (count($this->data)) {
 
             $url .= false === strpos($url, '?') ? '?' : '&';
-            $url .= urldecode(http_build_query($this->data));
+            $url .= http_build_query($this->data);
         }
 
         return $url;
@@ -301,7 +301,7 @@ abstract class AbstractRequest implements RequestInterface
             return '';
         }
 
-        return urldecode(http_build_query($this->getRequestData()));
+        return http_build_query($this->getRequestData());
     }
 
     /**
